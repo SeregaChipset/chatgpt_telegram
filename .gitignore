@@ -1,2 +1,5 @@
 /config.py
 /chatbot.old.zip
+/__pycache__/
+/venv/
+/.DS_Store

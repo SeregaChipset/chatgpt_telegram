@@ -4,7 +4,6 @@ import io
 import requests
 import openai
 from messages import *
-from config import *
 
 
 class ChChatGpt:
@@ -30,7 +29,7 @@ class ChChatGpt:
         self.messages.append({"role": "assistant", "content": answer})
         return answer
 
-    def out_image(self, prompt_image): #запрос к дали
+    def out_image(self, prompt_image):  # запрос к дали
         try:
             response = self.openai.Image.create(
                 prompt=prompt_image,
@@ -38,6 +37,6 @@ class ChChatGpt:
                 size="1024x1024"
             )
             image_url = response['data'][0]['url']
-            return io.BytesIO(requests.get(image_url).content) #отдаем поток
+            return io.BytesIO(requests.get(image_url).content)  # отдаем поток
         except:
-            return None #обосрался дали
+            return None  # обосрался дали
