@@ -11,9 +11,11 @@ class ChChatGpt:
         self.openai = openai
         self.openai.api_key = token
         self.model = "gpt-3.5-turbo"
-        self.messages = START_MESSAGE
+        self.messages = START_MESSAGE.copy()
 
     def out(self, quest):
+        if len(self.messages) > LEN_MESS:  # если длинна списка запросов больше указанного
+            del self.messages[1:3]  # удаляем первый запрос-ответ
         self.messages.append({"role": "user", "content": quest})
         try:
             response = self.openai.ChatCompletion.create(

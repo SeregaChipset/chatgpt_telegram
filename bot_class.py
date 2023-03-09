@@ -19,9 +19,11 @@ class ChBot:
         self.dp.register_message_handler(self.message)
 
         # добавляем кнопки
+        """
         help_button = types.KeyboardButton('/help')
-        empty_button = types.KeyboardButton('картинка ')
+        empty_button = types.KeyboardButton('картинка красивая картинка')
         self.custom_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).row(help_button, empty_button)
+        """
 
     def del_name(self, stroka, temp_list):  # функция удаления обращения чмоня
         i = temp_list.index(NAME.lower())
@@ -35,7 +37,8 @@ class ChBot:
         chat_id = message.chat.id
         if chat_id not in self.chats:
             self.chats[chat_id] = ChChatGpt(self.api_ai)
-        await message.reply(HELLO_MESSAGE, reply_markup=self.custom_keyboard)
+        #await message.reply(HELLO_MESSAGE, reply_markup=self.custom_keyboard)
+        await message.reply(HELLO_MESSAGE)
 
     async def help(self, message: types.Message):  # хелп меню
         await message.reply(HELP_MESSAGE)
