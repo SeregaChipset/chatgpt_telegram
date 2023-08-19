@@ -1,5 +1,4 @@
 """В этом файле определяется классы опенаи для chBot"""
-import os
 import io
 import requests
 import openai
@@ -13,7 +12,7 @@ class ChChatGpt:
         self.model = "gpt-3.5-turbo"
         self.messages = START_MESSAGE.copy()
 
-    def out(self, quest):
+    def out(self, quest: str) -> str:
         if len(self.messages) > LEN_MESS:  # если длинна списка запросов больше указанного
             del self.messages[1:3]  # удаляем первый запрос-ответ
         self.messages.append({"role": "user", "content": quest})
@@ -31,7 +30,7 @@ class ChChatGpt:
         self.messages.append({"role": "assistant", "content": answer})
         return answer
 
-    def out_image(self, prompt_image):  # запрос к дали
+    def out_image(self, prompt_image: str) -> io.BytesIO | None:  # запрос к дали
         try:
             response = self.openai.Image.create(
                 prompt=prompt_image,

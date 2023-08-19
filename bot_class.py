@@ -1,31 +1,35 @@
-"""В этом файле определяется класс chBot"""
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-import aiogram.utils
+"""В этом файле определяется класс chBot
+aiogram версии 3
+"""
+from aiogram import Bot, types, Dispatcher
+from aiogram.filters import Command
 from openai_class import ChChatGpt
 from messages import *
 
 
 class ChBot:
     def __init__(self, token_tg, api_ai):
-        self.bot = Bot(token=token_tg)
-        self.dp = Dispatcher(self.bot)
-        self.api_ai = api_ai
-        self.chats = {}  # будущий список чатов
+        self.bot: Bot = Bot(token=token_tg)
+        self.dp: Dispatcher = Dispatcher()
+        self.api_ai: str = api_ai
+        self.chats: dict = {}  # будущий список чатов
 
-        self.dp.register_message_handler(self.start, commands=['start'])
-        self.dp.register_message_handler(self.help, commands=['help'])
-        self.dp.register_message_handler(self.debug, commands=['debug'])
-        self.dp.register_message_handler(self.message)
+        #регистрирую хендлеры
+        self.dp.message.register(self.start, Command(commands=["start"]))
+        self.dp.message.register(self.help, Command(commands=["help"]))
+        self.dp.message.register(self.message)
 
-        # добавляем кнопки
+
         """
+        # добавляем кнопки
+        
         help_button = types.KeyboardButton('/help')
         empty_button = types.KeyboardButton('картинка красивая картинка')
         self.custom_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).row(help_button, empty_button)
         """
 
-    def del_name(self, stroka, temp_list):  # функция удаления обращения чмоня
+    @staticmethod
+    def del_name(stroka: str, temp_list: list[str]) -> str:  # функция удаления обращения чмоня
         i = temp_list.index(NAME.lower())
         if i > 2:  # логика такова, что удалению подлежит только чмоня в первых 3 позициях
             return stroka
@@ -37,7 +41,6 @@ class ChBot:
         chat_id = message.chat.id
         if chat_id not in self.chats:
             self.chats[chat_id] = ChChatGpt(self.api_ai)
-        #await message.reply(HELLO_MESSAGE, reply_markup=self.custom_keyboard)
         await message.reply(HELLO_MESSAGE)
 
     async def help(self, message: types.Message):  # хелп меню
@@ -47,8 +50,9 @@ class ChBot:
 
     async def debug(self, message: types.Message):  # получить ид чата + список сообщений
         chat_id = message.chat.id
-        await message.reply(message.chat.id)
+        await message.reply(str(message.chat.id))
         await self.bot.send_message(message.chat.id, self.chats[chat_id].messages)
+
 
     async def message(self, message: types.Message):  # функция обмена сообщениями
         chat_id = message.chat.id
@@ -72,6 +76,7 @@ class ChBot:
             else:
                 await self.bot.send_message(message.chat.id, 'Дали походу наебнулась')
 
+
     def start_polling(self):
-        aiogram.executor.start_polling(self.dp)
+        self.dp.run_polling(self.bot)
         
