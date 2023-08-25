@@ -2,5 +2,5 @@
 first version with class
 
 Бот которого зовут Чмоня=)
-Используется aiogram, openai
+Используется aiogram3, openai
 необходимо вставить свои токены в файл config.py
