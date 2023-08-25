@@ -1,7 +1,6 @@
 # SeregaChipset bot v02
 from bot_class import ChBot
 from config import *
-import asyncio
 
 
 if __name__ == '__main__':  # луп

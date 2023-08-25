@@ -1,7 +1,8 @@
 """В этом файле определяется класс chBot
 aiogram версии 3
 """
-from aiogram import Bot, types, Dispatcher
+from aiogram import Bot, F, types, Dispatcher
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from openai_class import ChChatGpt
 from messages import *
@@ -16,17 +17,24 @@ class ChBot:
 
         #регистрирую хендлеры
         self.dp.message.register(self.start, Command(commands=["start"]))
-        self.dp.message.register(self.help, Command(commands=["help"]))
+        self.dp.message.register(self.help, F.text.startswith("help"))
         self.dp.message.register(self.message)
 
 
-        """
+
         # добавляем кнопки
+        # Создаем кнопки с хелпом и картинкой
+        button_help: KeyboardButton = KeyboardButton(text="help")
+        button_image: KeyboardButton = KeyboardButton(text="картинка красивая картинка")
         
-        help_button = types.KeyboardButton('/help')
-        empty_button = types.KeyboardButton('картинка красивая картинка')
-        self.custom_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).row(help_button, empty_button)
-        """
+        # Создаем клавиатуру
+        self.kb: ReplyKeyboardMarkup = ReplyKeyboardMarkup(
+                                            keyboard=[[button_help],
+                                                      [button_image],
+                                                      ],
+                                            one_time_keyboard=True,
+                                            resize_keyboard=True)
+
 
     @staticmethod
     def del_name(stroka: str, temp_list: list[str]) -> str:  # функция удаления обращения чмоня
@@ -41,12 +49,11 @@ class ChBot:
         chat_id = message.chat.id
         if chat_id not in self.chats:
             self.chats[chat_id] = ChChatGpt(self.api_ai)
-        await message.reply(HELLO_MESSAGE)
+        await message.reply(HELLO_MESSAGE, reply_markup=self.kb)
 
     async def help(self, message: types.Message):  # хелп меню
         await message.reply(HELP_MESSAGE)
-        with open('help.png', 'rb') as photo:
-            await self.bot.send_photo(chat_id=message.chat.id, photo=types.InputFile(photo))
+        await self.bot.send_photo(chat_id=message.chat.id, photo=types.FSInputFile("help.png"))
 
     async def debug(self, message: types.Message):  # получить ид чата + список сообщений
         chat_id = message.chat.id
@@ -69,10 +76,9 @@ class ChBot:
             await self.bot.send_message(message.chat.id, text)  # отвечает
 
         if 'картинка' in msg_list:  # реагирует на слово картинки
-            input_io = self.chats[chat_id].out_image(message.text.replace('картинка', ''))  # запрос
-            if input_io:
-                photo = types.InputFile(input_io, filename='image.png')  # возвращаем картинку в нужном для аиограм виде
-                await self.bot.send_photo(chat_id=message.chat.id, photo=photo)
+            image_input: str = self.chats[chat_id].out_image(message.text.replace('картинка', ''))  # запрос
+            if image_input:
+                await self.bot.send_photo(chat_id=message.chat.id, photo=image_input)
             else:
                 await self.bot.send_message(message.chat.id, 'Дали походу наебнулась')
 

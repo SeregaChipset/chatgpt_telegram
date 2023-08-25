@@ -38,6 +38,6 @@ class ChChatGpt:
                 size="1024x1024"
             )
             image_url = response['data'][0]['url']
-            return io.BytesIO(requests.get(image_url).content)  # отдаем поток
+            return image_url  # отдаем поток
         except:
             return None  # обосрался дали
