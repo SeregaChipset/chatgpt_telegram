@@ -1,6 +1,6 @@
 """В этом файле определяется классы опенаи для chBot"""
-import io
-import requests
+from io import BytesIO
+from PIL import Image
 import openai
 from messages import *
 
@@ -30,7 +30,7 @@ class ChChatGpt:
         self.messages.append({"role": "assistant", "content": answer})
         return answer
 
-    def out_image(self, prompt_image: str) -> io.BytesIO | None:  # запрос к дали
+    def out_image(self, prompt_image: str) -> str | None:  # запрос к дали
         try:
             response = self.openai.Image.create(
                 prompt=prompt_image,
@@ -40,4 +40,27 @@ class ChChatGpt:
             image_url = response['data'][0]['url']
             return image_url  # отдаем поток
         except:
+            return None  # обосрался дали
+
+    def out_image_variations(self, img: BytesIO) -> str:
+        try:
+            # Read the image file from disk and resize it
+            image = Image.open(img)
+            width, height = 256, 256
+            image = image.resize((width, height))
+
+            # Convert the image to a BytesIO object
+            byte_stream = BytesIO()
+            image.save(byte_stream, format='PNG')
+            byte_array = byte_stream.getvalue()
+
+            response = openai.Image.create_variation(
+                image=byte_array,
+                n=1,
+                size="1024x1024"
+            )
+            image_url = response['data'][0]['url']
+            return image_url  # отдаем поток
+        except Exception as e:
+            print(e)
             return None  # обосрался дали

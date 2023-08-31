@@ -6,6 +6,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from openai_class import ChChatGpt
 from messages import *
+from io import BytesIO
 
 
 class ChBot:
@@ -17,7 +18,9 @@ class ChBot:
 
         #регистрирую хендлеры
         self.dp.message.register(self.start, Command(commands=["start"]))
+        self.dp.message.register(self.debug, Command(commands=["debug"]))
         self.dp.message.register(self.help, F.text.startswith("help"))
+        self.dp.message.register(self.variation, F.photo)
         self.dp.message.register(self.message)
 
 
@@ -60,6 +63,18 @@ class ChBot:
         await message.reply(str(message.chat.id))
         await self.bot.send_message(message.chat.id, self.chats[chat_id].messages)
 
+    async def variation(self, message: types.Message):  # функция возврата вариации изображения
+        chat_id = message.chat.id
+        if chat_id not in self.chats:
+            self.chats[chat_id] = ChChatGpt(self.api_ai)
+        photo_file = await self.bot.get_file(message.photo[-1].file_id)
+        image_input: BytesIO = await self.bot.download_file(photo_file.file_path)
+
+        image_output: str = self.chats[chat_id].out_image_variations(image_input)  # запрос
+        if image_output:
+            await self.bot.send_photo(chat_id=message.chat.id, photo=image_output)
+        else:
+            await self.bot.send_message(message.chat.id, 'Дали походу наебнулась')
 
     async def message(self, message: types.Message):  # функция обмена сообщениями
         chat_id = message.chat.id
