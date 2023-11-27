@@ -7,6 +7,7 @@ from aiogram.filters import Command
 from openai_class import ChChatGpt
 from messages import *
 from io import BytesIO
+from aiogram.utils.chat_action import ChatActionSender
 
 
 class ChBot:
@@ -18,6 +19,7 @@ class ChBot:
         self.IMAGE_SIZE = config.image_size
         self.IMAGE_RESIZE = config.image_resize
         self.proxy = config.proxy
+        self.logger = config.logger
 
         # регистрирую хендлеры
         self.dp.message.register(self.start, Command(commands=["start"]))
@@ -108,12 +110,21 @@ class ChBot:
         msg_list = [slovo.strip('!.,%:\'\"\\/*;?') for slovo in message.text.lower().split()]  # создает список слов
 
         if message.chat.type == "private":  # личная беседа
-            text = await self.chats[chat_id].out(message.text)  # запрашивает ответ у чатгпт
+            async with ChatActionSender.typing(bot=self.bot, chat_id=message.chat.id):
+                text = await self.chats[chat_id].out(message.text)  # запрашивает ответ у чатгпт
+                self.logger.info(f'\n пользователь {message.from_user.first_name} ({message.from_user.username})'
+                                 f'\n спрашивает: {message.text}'
+                                 f'\n ответ: {text}'
+                                 f'\n')  # отладка
             print(message.text, text)  # отладка
             await self.bot.send_message(message.chat.id, text)  # отвечает
         elif NAME.lower() in msg_list:  # если зовут по имени (для групп)
-            text = self.chats[chat_id].out(self.del_name(message.text, msg_list))  # запрашивает ответ у чатгпт
-            print(self.del_name(message.text, msg_list), text)  # отладка
+            async with ChatActionSender.typing(bot=self.bot, chat_id=message.chat.id):
+                text = self.chats[chat_id].out(self.del_name(message.text, msg_list))  # запрашивает ответ у чатгпт
+                self.logger.info(f'\n пользователь {message.from_user.id} ({message.from_user.username})'
+                                 f'\n спрашивает: {self.del_name(message.text, msg_list)}'
+                                 f'\n ответ: {text}'
+                                 f'\n')  # отладка
             await self.bot.send_message(message.chat.id, text)  # отвечает
 
         if 'картинка' in msg_list:  # реагирует на слово картинки
